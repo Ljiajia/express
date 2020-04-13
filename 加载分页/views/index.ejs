@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+    <ul class="ullist">
+        <%data.forEach(function(item){%>
+            <li>
+                <%=item.name%>
+            </li>
+            <%})%>
+
+    </ul>
+    <button>点击加载</button>
+    <div class="content">
+        <button class="prev" disabled>上一页</button>
+        <button class="next">下一页</button>
+    </div>
+
+    <script>
+        var btn = document.querySelectorAll("button")[0];
+        var ullist = document.getElementsByClassName("ullist")[0];
+        var prev = document.querySelectorAll("button")[1];
+        var next = document.querySelectorAll("button")[2];
+        var content = document.querySelectorAll(".content")[0];
+        var index = 0;
+        content.onclick = function(e) {
+            if (e.target.className == "next") {
+                prev.disabled = false;
+                index += 3;
+                var xml = new XMLHttpRequest;
+                xml.open("get", `/add?page=${index}&limit=${3}`, true);
+                xml.onload = function(res) {
+                    var data = JSON.parse(res.target.response);
+                    if (res.target.status == 200) {
+                        if (data.code == 2) {
+                            var html = '';
+                            data.data.forEach(function(item) {
+                                html += `<li>${item.name}</li>`
+                            })
+                            ullist.innerHTML = html;
+                        } else {
+                            ullist.innerHTML += `<li>${data.data}</li>`;
+                            e.target.disabled = true;
+                        }
+                    }
+                }
+                xml.send()
+            } else if (e.target.className == "prev") {
+                index -= 3;
+
+                next.disabled = false;
+                if (index <= 0) {
+                    prev.disabled = true;
+                }
+                var xml = new XMLHttpRequest;
+                xml.open("get", `/add?page=${index}&limit=${3}`, true);
+                xml.onload = function(res) {
+                    var data = JSON.parse(res.target.response);
+                    if (res.target.status == 200) {
+                        if (data.code == 2) {
+                            var html = '';
+                            data.data.forEach(function(item) {
+                                html += `<li>${item.name}</li>`
+                            })
+                            ullist.innerHTML = html;
+                        }
+                    }
+                }
+                xml.send()
+            }
+        }
+
+
+
+        btn.onclick = function() {
+            var xml = new XMLHttpRequest();
+            xml.open("post", "/data", true);
+            xml.setRequestHeader("content-type", "application/x-www-form-urlencoded");
+            xml.onload = function(res) {
+                var data = JSON.parse(res.target.response);
+                if (res.target.status == 200) {
+                    if (data.code == 2) {
+                        var html = '';
+                        data.data.forEach(function(item) {
+                            html += `<li>${item.name}</li>`
+                        })
+                        ullist.innerHTML += html;
+                    } else {
+                        ullist.innerHTML += `<li>${data.data}</li>`;
+                        btn.disabled = true;
+                    }
+                }
+            }
+            xml.send(`limit=${3}&len=${document.querySelectorAll("li").length}`)
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            list-style: none;
+        }
+        
+        span {
+            width: 50px;
+            text-align: center;
+            display: inline-block;
+            margin-right: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <ul class="ullist">
+            <li><span>姓名</span><span>密码</span></li>
+            <%data.forEach(function(item){%>
+                <li>
+                    <span>
+                      <%=item.name%>
+                  </span>
+                    <span>
+                      <%=item.pasd%>
+                  </span>
+                    <button class="remove" data-index=<%=item._id%>>删除</button>
+                    <button class="setmsg" data-index=<%=item._id%>>更改</button>
+                </li>
+                <%})%>
+                    <button class="add">添加</button>
+                    <input type="text" placeholder="请输入查找的内容" class="msg">
+                    <button type="submit" class="submit">Submit</button><br><br><br>
+                    <input type="text" placeholder="模糊搜索" class="search">
+                    <div class="content">
+
+                    </div>
+        </ul>
+    </div>
+    <script>
+        var ullist = document.getElementsByClassName("ullist")[0];
+        var submit = document.getElementsByClassName("submit")[0];
+        var msg = document.getElementsByClassName("msg")[0];
+        var content = document.getElementsByClassName("content")[0];
+        var search = document.getElementsByClassName("search")[0];
+        var time = null;
+        search.oninput = function() {
+            clearTimeout(time)
+            time = setTimeout(function() {
+                if (search.value.trim() !== "") {
+                    var xml = new XMLHttpRequest();
+                    xml.open("get", `/chaxun?name=${search.value}`, true);
+                    xml.onload = function(res) {
+                        var data = JSON.parse(res.target.response);
+                        if (res.target.status == 200) {
+                            if (data.code == 5) {
+                                var tst = '';
+
+                                data.data.forEach(function(item) {
+                                    tst += `<p>${item.name}</p>`
+                                })
+                                content.innerHTML = tst;
+                            } else {
+                                content.innerHTML = `<p>${data.data}</p>`
+                            }
+                        }
+                    }
+                    xml.send()
+                }
+            }, 500)
+        }
+
+        ullist.onclick = function(e) {
+            if (e.target.className === "remove") {
+                var xml = new XMLHttpRequest();
+                xml.open("get", `/remove?_id=${e.target.getAttribute("data-index")}`, true);
+                xml.send();
+                e.target.parentNode.remove();
+            } else if (e.target.className === "setmsg") {
+                location.href = `/setmsg.html?_id=${e.target.getAttribute("data-index")}`
+            } else if (e.target.className === "add") {
+                location.href = "add.html";
+            }
+        }
+        submit.onclick = function() {
+            var xml = new XMLHttpRequest();
+            xml.open("get", `/search?name=${msg.value}`);
+            xml.onload = function(res) {
+                var data = JSON.parse(res.target.response).data;
+                var html = '';
+                data.forEach(function(item) {
+                    html += `<p>${item.name}</p>`
+                })
+                content.innerHTML = html;
+            }
+            xml.send()
+        }
+    </script>
+</body>
+
+</html>

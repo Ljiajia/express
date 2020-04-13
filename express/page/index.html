@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="text" placeholder="请输入用户名">
+    <input type="password" placeholder="请输入您的密码">
+    <input type="button" value="提交">
+    <script>
+        var username = document.querySelectorAll("input")[0];
+        var pasd = document.querySelectorAll("input")[1];
+        var btn = document.querySelectorAll("input")[2];
+        btn.onclick = function() {
+            if (pasd.value !== "" && name.value !== "") {
+                var xml = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+                xml.open("post", "/index", true);
+                xml.setRequestHeader("content-type", "application/x-www-form-urlencoded");
+                xml.onreadystatechange = function() {
+                    if (xml.readyState === 4 && xml.status == 200) {
+                        var data = JSON.parse(xml.responseText);
+                        alert(data.msg)
+                        if (data.code === 2) {
+                            location.href = "http://localhost:8090/login"
+                        }
+                    }
+                }
+                xml.send(`name=${username.value}&pasd=${pasd.value}`)
+            } else {
+                alert("账号密码不能为空")
+            }
+        }
+    </script>
+</body>
+
+</html>
